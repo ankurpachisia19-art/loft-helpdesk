@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOFT Ticket Dashboard</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root{--bg:#000;--s1:#0d0d0d;--s2:#111;--s3:#161616;--border:#1e1e1e;--green:#7dc464;--gdim:rgba(125,196,100,.1);--text:#f0f0f0;--dim:#555;--mid:#888;--red:#e05555;--amber:#e0a030;--blue:#5599e0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--s1);position:sticky;top:0;z-index:100}
+.lw{display:flex;align-items:center;gap:10px}
+.lm{width:32px;height:32px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#000;letter-spacing:-1px}
+.lt{display:flex;flex-direction:column}
+.ln{font-size:13px;font-weight:700;letter-spacing:2.5px}
+.ls{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:var(--gdim);padding:4px 10px;border-radius:20px;border:1px solid rgba(125,196,100,.2)}
+.ld{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.wrap{max-width:1400px;margin:0 auto;padding:24px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px}
+.sn{font-size:28px;font-weight:700;margin-bottom:3px}
+.sl{font-size:11px;color:var(--mid);letter-spacing:.5px;text-transform:uppercase}
+.stat.o .sn{color:var(--amber)}.stat.c .sn{color:var(--green)}.stat.u .sn{color:var(--blue)}
+.filters{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.fb{background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.fb:hover,.fb.active{background:var(--gdim);border-color:rgba(125,196,100,.4);color:var(--green)}
+.sb{margin-left:auto;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;font-family:inherit;outline:none;min-width:200px}
+.sb:focus{border-color:rgba(125,196,100,.35)}.sb::placeholder{color:var(--dim)}
+.tw{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.th{display:grid;grid-template-columns:90px 1fr 110px 120px 130px 110px 70px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;color:var(--mid);letter-spacing:1px;text-transform:uppercase}
+.tr{display:grid;grid-template-columns:90px 1fr 110px 120px 130px 110px 70px;padding:13px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;align-items:center}
+.tr:last-child{border-bottom:none}.tr:hover{background:var(--s3)}
+.tc{font-size:13px;padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tid{font-family:monospace;font-size:11px;color:var(--mid)}
+.tsub{font-weight:500}.tsub small{display:block;font-size:11px;color:var(--mid);font-weight:400;margin-top:1px}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.badge.open{background:rgba(224,160,48,.12);color:var(--amber);border:1px solid rgba(224,160,48,.25)}
+.badge.closed{background:rgba(125,196,100,.1);color:var(--green);border:1px solid rgba(125,196,100,.2)}
+.badge.cleaning{background:rgba(85,153,224,.1);color:var(--blue);border:1px solid rgba(85,153,224,.2)}
+.badge.payment{background:rgba(125,196,100,.1);color:var(--green);border:1px solid rgba(125,196,100,.2)}
+.badge.agreement{background:rgba(224,160,48,.1);color:var(--amber);border:1px solid rgba(224,160,48,.2)}
+.badge.legal{background:rgba(224,85,85,.1);color:var(--red);border:1px solid rgba(224,85,85,.2)}
+.badge.un{background:var(--s2);color:var(--dim);border:1px solid var(--border)}
+.empty{padding:60px;text-align:center;color:var(--mid)}.empty p{font-size:13px;margin-top:6px}
+.loading{padding:40px;text-align:center;color:var(--mid);font-size:13px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(4px)}
+.ov.hidden{display:none}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:560px;max-width:96vw;max-height:90vh;overflow-y:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+.mh h3{font-size:15px;font-weight:700}
+.mx{background:none;border:none;color:var(--mid);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px}.mx:hover{color:var(--text)}
+.mb{padding:20px}
+.mf{margin-bottom:14px}
+.mf label{display:block;font-size:10px;color:var(--mid);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.mf .v{font-size:14px;color:var(--text);line-height:1.6}
+.mf .desc{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);line-height:1.6}
+.mf select,.mf input,.mf textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.mf select:focus,.mf input:focus,.mf textarea:focus{border-color:rgba(125,196,100,.4)}
+.mf textarea{min-height:80px;resize:vertical}
+.mf select option{background:#1a1a1a}
+.ma{display:flex;gap:8px;padding:16px 20px;border-top:1px solid var(--border);flex-wrap:wrap}
+.mbtn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.mbtn.pri{background:var(--green);color:#000}.mbtn.pri:hover{background:#8fd670}
+.mbtn.dan{background:rgba(224,85,85,.12);color:var(--red);border:1px solid rgba(224,85,85,.2)}.mbtn.dan:hover{background:rgba(224,85,85,.2)}
+.mbtn.gh{background:var(--s2);color:var(--mid);border:1px solid var(--border)}.mbtn.gh:hover{color:var(--text)}
+.mbtn.wa{background:#0e6e38;color:#fff}.mbtn.wa:hover{background:#0a5a2e}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.ts{font-size:11px;color:var(--dim)}
+</style>
+</head>
+<body>
+<header>
+  <div class="lw">
+    <div class="lm">L</div>
+    <div class="lt"><span class="ln">LOFT</span><span class="ls">Ticket Dashboard</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="sync" style="font-size:11px;color:var(--dim)"></span>
+    <div class="live"><div class="ld"></div>Live</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="sn" id="st-all">—</div><div class="sl">Total</div></div>
+    <div class="stat o"><div class="sn" id="st-open">—</div><div class="sl">Open</div></div>
+    <div class="stat c"><div class="sn" id="st-closed">—</div><div class="sl">Closed</div></div>
+    <div class="stat u"><div class="sn" id="st-un">—</div><div class="sl">Unassigned</div></div>
+  </div>
+  <div class="filters">
+    <button class="fb active" onclick="setF('all',this)">All</button>
+    <button class="fb" onclick="setF('open',this)">Open</button>
+    <button class="fb" onclick="setF('closed',this)">Closed</button>
+    <button class="fb" onclick="setF('cleaning',this)">Cleaning</button>
+    <button class="fb" onclick="setF('payment',this)">Payment</button>
+    <button class="fb" onclick="setF('agreement',this)">Agreement</button>
+    <button class="fb" onclick="setF('legal',this)">Legal</button>
+    <input type="text" class="sb" id="search" placeholder="Search member, cabin, description..." oninput="render()">
+  </div>
+  <div class="tw">
+    <div class="th">
+      <div>Ticket ID</div><div>Member / Issue</div><div>Category</div>
+      <div>Status</div><div>Assigned To</div><div>Raised On</div><div>Action</div>
+    </div>
+    <div id="tbody"><div class="loading">Loading tickets...</div></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="ov hidden" id="ov" onclick="closeMod(event)">
+  <div class="modal">
+    <div class="mh"><h3 id="mt">Ticket</h3><button class="mx" onclick="closeMod()">&#x2715;</button></div>
+    <div class="mb" id="mb"></div>
+    <div class="ma" id="ma"></div>
+  </div>
+</div>
+
+<script>
+// ── FILL THESE IN ─────────────────────────────────────────────────────────────
+const FB_CONFIG = {
+  apiKey:            "AIzaSyDX0V-U0Wj_8SPVeiCgnC601HNLsOeDbSg",
+  authDomain:        "loft-finance.firebaseapp.com",
+  projectId:         "loft-finance",
+  storageBucket:     "loft-finance.firebasestorage.app",
+  messagingSenderId: "192587330227",
+  appId:             "1:192587330227:web:0ef42d1d1486dda87936c6"
+};
+const EJ_PK        = 'oOFB5tkG6YdSTZQuc';
+const EJ_SVC       = 'service_i4gknms';
+const EJ_CLOSE_TPL = 'loft_ticket_closed';
+const WA           = '918600888073';
+const TEAM         = ['Ankur','Tarun','Mugdha','Mohak','Unassigned'];
+// ─────────────────────────────────────────────────────────────────────────────
+
+let db = null;
+try { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); db = firebase.firestore(); } catch(e) { console.warn('FB',e.message); }
+try { if (EJ_PK !== 'YOUR_EMAILJS_PUBLIC_KEY') emailjs.init(EJ_PK); } catch(e) {}
+
+let tickets = [], filter = 'all';
+
+function startListener() {
+  if (!db) { document.getElementById('tbody').innerHTML = '<div class="loading">Firebase not configured. Fill in FB_CONFIG values.</div>'; return; }
+  db.collection('loft_tickets').orderBy('createdAt','desc').onSnapshot(snap => {
+    tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    updateStats(); render();
+    document.getElementById('sync').textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  }, err => {
+    document.getElementById('tbody').innerHTML = '<div class="loading">Could not load tickets. Check Firebase config and Firestore rules.</div>';
+  });
+}
+
+function updateStats() {
+  document.getElementById('st-all').textContent    = tickets.length;
+  document.getElementById('st-open').textContent   = tickets.filter(t => t.status === 'open').length;
+  document.getElementById('st-closed').textContent = tickets.filter(t => t.status === 'closed').length;
+  document.getElementById('st-un').textContent     = tickets.filter(t => !t.assignedTo).length;
+}
+
+function setF(f, btn) {
+  filter = f;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  render();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function render() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  let rows = [...tickets];
+  if (filter === 'open')   rows = rows.filter(t => t.status === 'open');
+  else if (filter === 'closed') rows = rows.filter(t => t.status === 'closed');
+  else if (['cleaning','payment','agreement','legal'].includes(filter)) rows = rows.filter(t => t.category === filter);
+  if (q) rows = rows.filter(t =>
+    (t.memberName||'').toLowerCase().includes(q) ||
+    (t.cabin||'').toLowerCase().includes(q) ||
+    (t.description||'').toLowerCase().includes(q) ||
+    (t.summary||'').toLowerCase().includes(q)
+  );
+  if (!rows.length) {
+    document.getElementById('tbody').innerHTML = '<div class="empty"><strong>No tickets found</strong><p>Try adjusting your filters.</p></div>';
+    return;
+  }
+  document.getElementById('tbody').innerHTML = rows.map(t => {
+    const d = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
+    const ds = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+    const assigned = t.assignedTo || '';
+    const summary = esc(t.summary || (t.description||'').slice(0,55));
+    return `<div class="tr" onclick="openMod('${t.id}')">
+      <div class="tc tid">#${t.id.slice(0,8).toUpperCase()}</div>
+      <div class="tc tsub">${esc(t.memberName||'Unknown')}<small>${summary}${(t.description||'').length>55?'...':''}</small></div>
+      <div class="tc"><span class="badge ${t.category||''}">${t.category||'—'}</span></div>
+      <div class="tc"><span class="badge ${t.status||'open'}">${t.status||'open'}</span></div>
+      <div class="tc"><span class="badge ${assigned?'':'un'}">${assigned||'Unassigned'}</span></div>
+      <div class="tc ts">${ds}</div>
+      <div class="tc"><span style="font-size:11px;color:var(--green)">View</span></div>
+    </div>`;
+  }).join('');
+}
+
+function openMod(id) {
+  const t = tickets.find(x => x.id === id); if (!t) return;
+  const sid = t.id.slice(0,8).toUpperCase();
+  document.getElementById('mt').textContent = 'Ticket #' + sid;
+  const d  = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
+  const cd = t.closedAt?.toDate  ? t.closedAt.toDate()  : null;
+
+  document.getElementById('mb').innerHTML = `
+    <div class="mf"><label>Member</label><div class="v">${esc(t.memberName||'—')}</div></div>
+    <div class="mf"><label>Space / Cabin</label><div class="v">${esc(t.cabin||'—')}</div></div>
+    <div class="mf"><label>Email</label><div class="v">${esc(t.email||'Not provided')}</div></div>
+    <div class="mf"><label>Category</label><div class="v"><span class="badge ${t.category}">${t.category}</span></div></div>
+    <div class="mf"><label>Status</label><div class="v"><span class="badge ${t.status}">${t.status}</span></div></div>
+    <div class="mf"><label>Raised On</label><div class="v ts">${d.toLocaleString('en-IN')}</div></div>
+    ${cd ? `<div class="mf"><label>Closed On</label><div class="v ts">${cd.toLocaleString('en-IN')}</div></div>` : ''}
+    <div class="divider"></div>
+    <div class="mf"><label>Description</label><div class="desc">${esc(t.description||'—')}</div></div>
+    <div class="divider"></div>
+    <div class="mf">
+      <label>Assign To</label>
+      <select id="m-assign" onchange="updAssign('${t.id}',this.value)">
+        ${TEAM.map(p => `<option value="${p==='Unassigned'?'':p}" ${(t.assignedTo||'')===(p==='Unassigned'?'':p)?'selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="mf">
+      <label>Staff Notes</label>
+      <textarea id="m-notes" placeholder="Add internal notes...">${esc(t.staffNotes||'')}</textarea>
+    </div>`;
+
+  const waMsg = `LOFT Ticket Update%0A%0ATicket: %23${sid}%0AMember: ${encodeURIComponent(t.memberName||'')}%0ASpace: ${encodeURIComponent(t.cabin||'')}%0A%0A${encodeURIComponent(t.description||'')}`;
+  const ma = document.getElementById('ma');
+  ma.innerHTML = '';
+
+  if (t.status === 'open') {
+    const cb = document.createElement('button');
+    cb.className = 'mbtn pri'; cb.textContent = 'Close Ticket';
+    cb.onclick = () => closeTicket(t.id, t);
+    ma.appendChild(cb);
+  } else {
+    const rb = document.createElement('button');
+    rb.className = 'mbtn gh'; rb.textContent = 'Reopen Ticket';
+    rb.onclick = () => reopenTicket(t.id);
+    ma.appendChild(rb);
+  }
+
+  const sv = document.createElement('button');
+  sv.className = 'mbtn gh'; sv.textContent = 'Save Notes';
+  sv.onclick = () => saveNotes(t.id, sv);
+  ma.appendChild(sv);
+
+  const wa = document.createElement('a');
+  wa.className = 'mbtn wa'; wa.href = `https://wa.me/${WA}?text=${waMsg}`; wa.target = '_blank';
+  wa.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp`;
+  ma.appendChild(wa);
+
+  document.getElementById('ov').classList.remove('hidden');
+}
+
+function closeMod(e) {
+  if (!e || e.target === document.getElementById('ov'))
+    document.getElementById('ov').classList.add('hidden');
+}
+
+async function updAssign(id, val) {
+  if (!db) return;
+  try { await db.collection('loft_tickets').doc(id).update({ assignedTo: val, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+  catch(e) { console.error(e); }
+}
+
+async function saveNotes(id, btn) {
+  if (!db) return;
+  const notes = document.getElementById('m-notes').value;
+  try {
+    await db.collection('loft_tickets').doc(id).update({ staffNotes: notes, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    btn.textContent = 'Saved'; setTimeout(() => { btn.textContent = 'Save Notes'; }, 2000);
+  } catch(e) { console.error(e); }
+}
+
+async function closeTicket(id, t) {
+  if (!db) return;
+  try {
+    await db.collection('loft_tickets').doc(id).update({ status: 'closed', closedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    if (t.email && EJ_PK !== 'YOUR_EMAILJS_PUBLIC_KEY') {
+      try {
+        await emailjs.send(EJ_SVC, EJ_CLOSE_TPL, {
+          ticket_id: id.slice(0,8).toUpperCase(),
+          member_name: t.memberName || '',
+          category: t.category,
+          description: t.description,
+          to_email: t.email
+        });
+      } catch(e) { console.error('Close email:', e); }
+    }
+    document.getElementById('ov').classList.add('hidden');
+  } catch(e) { console.error(e); }
+}
+
+async function reopenTicket(id) {
+  if (!db) return;
+  try {
+    await db.collection('loft_tickets').doc(id).update({ status: 'open', closedAt: null, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('ov').classList.add('hidden');
+  } catch(e) { console.error(e); }
+}
+
+startListener();
+</script>
+</body>
+</html>

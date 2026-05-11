@@ -11,9 +11,9 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
 :root{
-  --bg:#000;--s1:#0a0a0a;--s2:#0f0f0f;--s3:#141414;--border:#1c1c1c;
+  --bg:#000;--s1:#0e0e0e;--s2:#161616;--s3:#1c1c1c;--border:#2a2a2a;
   --green:#7dc464;--gdim:rgba(125,196,100,.1);--gborder:rgba(125,196,100,.2);
-  --text:#f0f0f0;--dim:#444;--mid:#777;
+  --text:#ffffff;--dim:#666;--mid:#aaa;
   --red:#e05555;--amber:#e0a030;--blue:#5599e0;
   --font:'Figtree','Helvetica Neue',Helvetica,Arial,sans-serif;
 }
@@ -34,16 +34,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
-.stat{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:16px 18px}
-.sn{font-size:30px;font-weight:700;margin-bottom:3px;letter-spacing:-1px}
-.sl{font-size:11px;color:var(--mid);letter-spacing:.5px;text-transform:uppercase;font-weight:500}
+.stat{background:#111;border:1px solid #2a2a2a;border-radius:11px;padding:16px 18px}
+.sn{font-size:30px;font-weight:700;margin-bottom:3px;letter-spacing:-1px;color:#fff}
+.sl{font-size:11px;color:#aaa;letter-spacing:.5px;text-transform:uppercase;font-weight:500}
 .stat.o .sn{color:var(--amber)}.stat.c .sn{color:var(--green)}
 .stat.u .sn{color:var(--blue)}.stat.ov .sn{color:var(--red)}
 
 /* CHARTS ROW */
 .charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
-.chart-card{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:18px}
-.chart-title{font-size:12px;font-weight:600;color:var(--mid);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px}
+.chart-card{background:#111;border:1px solid #2a2a2a;border-radius:11px;padding:18px}
+.chart-title{font-size:12px;font-weight:600;color:#bbb;letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px}
 .chart-wrap{position:relative;height:180px}
 
 /* RESPONSE TIME BARS */
@@ -62,8 +62,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .search-inp:focus{border-color:rgba(125,196,100,.3)}.search-inp::placeholder{color:var(--dim)}
 
 /* TABLE */
-.tw{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.th{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.tw{background:#0e0e0e;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden}
+.th{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:10px 16px;border-bottom:1px solid #2a2a2a;font-size:10px;color:#bbb;letter-spacing:1px;text-transform:uppercase;font-weight:600}
 .tr{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;align-items:center}
 .tr:last-child{border-bottom:none}.tr:hover{background:var(--s3)}
 .tc{font-size:13px;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -323,7 +323,7 @@ function updateCategoryChart() {
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#777', font: { size: 11, family: 'Figtree' }, padding: 12, boxWidth: 10 } }
+        legend: { position: 'bottom', labels: { color: '#aaa', font: { size: 11, family: 'Figtree' }, padding: 12, boxWidth: 10 } }
       },
       cutout: '68%'
     }
@@ -366,11 +366,11 @@ function updateTrendChart() {
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: '#777', font: { size: 11, family: 'Figtree' }, boxWidth: 10 } }
+        legend: { labels: { color: '#aaa', font: { size: 11, family: 'Figtree' }, boxWidth: 10 } }
       },
       scales: {
         x: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#1c1c1c' } },
-        y: { ticks: { color: '#555', font: { size: 10 }, stepSize: 1 }, grid: { color: '#1c1c1c' }, beginAtZero: true }
+        y: { ticks: { color: '#888', font: { size: 10 }, stepSize: 1 }, grid: { color: '#2a2a2a' }, beginAtZero: true }
       }
     }
   });

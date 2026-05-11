@@ -7,70 +7,113 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#000;--s1:#0d0d0d;--s2:#111;--s3:#161616;--border:#1e1e1e;--green:#7dc464;--gdim:rgba(125,196,100,.1);--text:#f0f0f0;--dim:#555;--mid:#888;--red:#e05555;--amber:#e0a030;--blue:#5599e0}
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#000;--s1:#0a0a0a;--s2:#0f0f0f;--s3:#141414;--border:#1c1c1c;
+  --green:#7dc464;--gdim:rgba(125,196,100,.1);--gborder:rgba(125,196,100,.2);
+  --text:#f0f0f0;--dim:#444;--mid:#777;
+  --red:#e05555;--amber:#e0a030;--blue:#5599e0;
+  --font:'Figtree','Helvetica Neue',Helvetica,Arial,sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--s1);position:sticky;top:0;z-index:100}
 .lw{display:flex;align-items:center;gap:10px}
-.lm{width:32px;height:32px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#000;letter-spacing:-1px}
+.lm{width:34px;height:34px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:#000;letter-spacing:-1px;font-family:var(--font)}
 .lt{display:flex;flex-direction:column}
 .ln{font-size:13px;font-weight:700;letter-spacing:2.5px}
 .ls{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
-.live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:var(--gdim);padding:4px 10px;border-radius:20px;border:1px solid rgba(125,196,100,.2)}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:var(--gdim);padding:4px 10px;border-radius:20px;border:1px solid var(--gborder);font-weight:500}
 .ld{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.wrap{max-width:1400px;margin:0 auto;padding:24px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.wrap{max-width:1440px;margin:0 auto;padding:24px}
+
+/* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
-.stat{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:16px}
-.sn{font-size:28px;font-weight:700;margin-bottom:3px}
-.sl{font-size:11px;color:var(--mid);letter-spacing:.5px;text-transform:uppercase}
-.stat.o .sn{color:var(--amber)}.stat.c .sn{color:var(--green)}.stat.u .sn{color:var(--blue)}
-.filters{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.fb{background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
-.fb:hover,.fb.active{background:var(--gdim);border-color:rgba(125,196,100,.4);color:var(--green)}
-.sb{margin-left:auto;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;font-family:inherit;outline:none;min-width:200px}
-.sb:focus{border-color:rgba(125,196,100,.35)}.sb::placeholder{color:var(--dim)}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:16px 18px}
+.sn{font-size:30px;font-weight:700;margin-bottom:3px;letter-spacing:-1px}
+.sl{font-size:11px;color:var(--mid);letter-spacing:.5px;text-transform:uppercase;font-weight:500}
+.stat.o .sn{color:var(--amber)}.stat.c .sn{color:var(--green)}
+.stat.u .sn{color:var(--blue)}.stat.ov .sn{color:var(--red)}
+
+/* CHARTS ROW */
+.charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:18px}
+.chart-title{font-size:12px;font-weight:600;color:var(--mid);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px}
+.chart-wrap{position:relative;height:180px}
+
+/* RESPONSE TIME BARS */
+.rt-bars{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.rt-row{display:flex;align-items:center;gap:10px}
+.rt-label{font-size:12px;color:var(--mid);width:70px;flex-shrink:0;text-transform:capitalize}
+.rt-bar-wrap{flex:1;background:var(--s2);border-radius:4px;height:8px;overflow:hidden}
+.rt-bar{height:100%;background:var(--green);border-radius:4px;transition:width .6s ease}
+.rt-val{font-size:11px;color:var(--mid);width:45px;text-align:right;flex-shrink:0}
+
+/* FILTERS */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.fb{background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:var(--font);font-weight:500}
+.fb:hover,.fb.active{background:var(--gdim);border-color:rgba(125,196,100,.35);color:var(--green)}
+.search-inp{margin-left:auto;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--text);font-size:12px;font-family:var(--font);outline:none;min-width:210px}
+.search-inp:focus{border-color:rgba(125,196,100,.3)}.search-inp::placeholder{color:var(--dim)}
+
+/* TABLE */
 .tw{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.th{display:grid;grid-template-columns:90px 1fr 110px 120px 130px 110px 70px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;color:var(--mid);letter-spacing:1px;text-transform:uppercase}
-.tr{display:grid;grid-template-columns:90px 1fr 110px 120px 130px 110px 70px;padding:13px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;align-items:center}
+.th{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.tr{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;align-items:center}
 .tr:last-child{border-bottom:none}.tr:hover{background:var(--s3)}
-.tc{font-size:13px;padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc{font-size:13px;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tid{font-family:monospace;font-size:11px;color:var(--mid)}
 .tsub{font-weight:500}.tsub small{display:block;font-size:11px;color:var(--mid);font-weight:400;margin-top:1px}
-.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-.badge.open{background:rgba(224,160,48,.12);color:var(--amber);border:1px solid rgba(224,160,48,.25)}
-.badge.closed{background:rgba(125,196,100,.1);color:var(--green);border:1px solid rgba(125,196,100,.2)}
-.badge.cleaning{background:rgba(85,153,224,.1);color:var(--blue);border:1px solid rgba(85,153,224,.2)}
-.badge.payment{background:rgba(125,196,100,.1);color:var(--green);border:1px solid rgba(125,196,100,.2)}
-.badge.agreement{background:rgba(224,160,48,.1);color:var(--amber);border:1px solid rgba(224,160,48,.2)}
-.badge.legal{background:rgba(224,85,85,.1);color:var(--red);border:1px solid rgba(224,85,85,.2)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.badge.open{background:rgba(224,160,48,.1);color:var(--amber);border:1px solid rgba(224,160,48,.2)}
+.badge.closed{background:rgba(125,196,100,.08);color:var(--green);border:1px solid rgba(125,196,100,.15)}
+.badge.cleaning{background:rgba(85,153,224,.1);color:var(--blue);border:1px solid rgba(85,153,224,.18)}
+.badge.payment{background:rgba(125,196,100,.08);color:var(--green);border:1px solid rgba(125,196,100,.15)}
+.badge.agreement{background:rgba(224,160,48,.08);color:var(--amber);border:1px solid rgba(224,160,48,.18)}
+.badge.legal{background:rgba(224,85,85,.08);color:var(--red);border:1px solid rgba(224,85,85,.18)}
 .badge.un{background:var(--s2);color:var(--dim);border:1px solid var(--border)}
+
+/* TIMER BADGE */
+.timer{font-size:11px;font-family:monospace;padding:3px 7px;border-radius:4px;font-weight:600}
+.timer.fresh{color:var(--green);background:rgba(125,196,100,.08);border:1px solid rgba(125,196,100,.15)}
+.timer.warn{color:var(--amber);background:rgba(224,160,48,.08);border:1px solid rgba(224,160,48,.18)}
+.timer.overdue{color:var(--red);background:rgba(224,85,85,.08);border:1px solid rgba(224,85,85,.18)}
+.timer.done{color:var(--dim);background:var(--s2);border:1px solid var(--border)}
+
 .empty{padding:60px;text-align:center;color:var(--mid)}.empty p{font-size:13px;margin-top:6px}
 .loading{padding:40px;text-align:center;color:var(--mid);font-size:13px}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(4px)}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(5px)}
 .ov.hidden{display:none}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:560px;max-width:96vw;max-height:90vh;overflow-y:auto}
-.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:580px;max-width:96vw;max-height:90vh;overflow-y:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
 .mh h3{font-size:15px;font-weight:700}
 .mx{background:none;border:none;color:var(--mid);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px}.mx:hover{color:var(--text)}
-.mb{padding:20px}
-.mf{margin-bottom:14px}
-.mf label{display:block;font-size:10px;color:var(--mid);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.mb{padding:20px 22px}
+.mf{margin-bottom:15px}
+.mf label{display:block;font-size:10px;color:var(--mid);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;font-weight:600}
 .mf .v{font-size:14px;color:var(--text);line-height:1.6}
-.mf .desc{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);line-height:1.6}
-.mf select,.mf input,.mf textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
-.mf select:focus,.mf input:focus,.mf textarea:focus{border-color:rgba(125,196,100,.4)}
+.mf .desc{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);line-height:1.6}
+.mf select,.mf input,.mf textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:var(--font);outline:none}
+.mf select:focus,.mf textarea:focus{border-color:rgba(125,196,100,.35)}
 .mf textarea{min-height:80px;resize:vertical}
-.mf select option{background:#1a1a1a}
-.ma{display:flex;gap:8px;padding:16px 20px;border-top:1px solid var(--border);flex-wrap:wrap}
-.mbtn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.mf select option{background:#111}
+.ma{display:flex;gap:8px;padding:16px 22px;border-top:1px solid var(--border);flex-wrap:wrap}
+.mbtn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--font);transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .mbtn.pri{background:var(--green);color:#000}.mbtn.pri:hover{background:#8fd670}
-.mbtn.dan{background:rgba(224,85,85,.12);color:var(--red);border:1px solid rgba(224,85,85,.2)}.mbtn.dan:hover{background:rgba(224,85,85,.2)}
 .mbtn.gh{background:var(--s2);color:var(--mid);border:1px solid var(--border)}.mbtn.gh:hover{color:var(--text)}
 .mbtn.wa{background:#0e6e38;color:#fff}.mbtn.wa:hover{background:#0a5a2e}
 .divider{height:1px;background:var(--border);margin:14px 0}
 .ts{font-size:11px;color:var(--dim)}
+.section-title{font-size:13px;font-weight:600;color:var(--mid);letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -86,26 +129,52 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 </header>
 
 <div class="wrap">
+  <!-- STATS -->
   <div class="stats">
-    <div class="stat"><div class="sn" id="st-all">—</div><div class="sl">Total</div></div>
+    <div class="stat"><div class="sn" id="st-all">—</div><div class="sl">Total Tickets</div></div>
     <div class="stat o"><div class="sn" id="st-open">—</div><div class="sl">Open</div></div>
     <div class="stat c"><div class="sn" id="st-closed">—</div><div class="sl">Closed</div></div>
     <div class="stat u"><div class="sn" id="st-un">—</div><div class="sl">Unassigned</div></div>
+    <div class="stat ov"><div class="sn" id="st-ov">—</div><div class="sl">Overdue (4h+)</div></div>
+    <div class="stat"><div class="sn" id="st-avg" style="color:var(--blue)">—</div><div class="sl">Avg Response</div></div>
   </div>
-  <div class="filters">
+
+  <!-- CHARTS -->
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Tickets by Category</div>
+      <div class="chart-wrap"><canvas id="chart-cat"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Open vs Closed (Last 7 Days)</div>
+      <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Avg Response Time by Category</div>
+      <div class="rt-bars" id="rt-bars">
+        <div class="loading" style="padding:20px;font-size:12px">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="toolbar">
     <button class="fb active" onclick="setF('all',this)">All</button>
     <button class="fb" onclick="setF('open',this)">Open</button>
     <button class="fb" onclick="setF('closed',this)">Closed</button>
+    <button class="fb" onclick="setF('overdue',this)">Overdue</button>
     <button class="fb" onclick="setF('cleaning',this)">Cleaning</button>
     <button class="fb" onclick="setF('payment',this)">Payment</button>
     <button class="fb" onclick="setF('agreement',this)">Agreement</button>
     <button class="fb" onclick="setF('legal',this)">Legal</button>
-    <input type="text" class="sb" id="search" placeholder="Search member, cabin, description..." oninput="render()">
+    <input type="text" class="search-inp" id="search" placeholder="Search member, cabin, description..." oninput="render()">
   </div>
+
+  <!-- TABLE -->
   <div class="tw">
     <div class="th">
-      <div>Ticket ID</div><div>Member / Issue</div><div>Category</div>
-      <div>Status</div><div>Assigned To</div><div>Raised On</div><div>Action</div>
+      <div>Ticket</div><div>Member / Issue</div><div>Category</div>
+      <div>Status</div><div>Assigned</div><div>Raised</div><div>Age / Timer</div><div>Action</div>
     </div>
     <div id="tbody"><div class="loading">Loading tickets...</div></div>
   </div>
@@ -121,7 +190,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 </div>
 
 <script>
-// ── FILL THESE IN ─────────────────────────────────────────────────────────────
 const FB_CONFIG = {
   apiKey:            "AIzaSyDX0V-U0Wj_8SPVeiCgnC601HNLsOeDbSg",
   authDomain:        "loft-finance.firebaseapp.com",
@@ -135,32 +203,202 @@ const EJ_SVC       = 'service_i4gknms';
 const EJ_CLOSE_TPL = 'loft_ticket_closed';
 const WA           = '918600888073';
 const TEAM         = ['Ankur','Tarun','Mugdha','Mohak','Unassigned'];
-// ─────────────────────────────────────────────────────────────────────────────
 
 let db = null;
-try { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); db = firebase.firestore(); } catch(e) { console.warn('FB',e.message); }
+try { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); db = firebase.firestore(); } catch(e) { console.warn(e); }
 try { if (EJ_PK !== 'YOUR_EMAILJS_PUBLIC_KEY') emailjs.init(EJ_PK); } catch(e) {}
 
-let tickets = [], filter = 'all';
+let tickets = [], filter = 'all', charts = {};
+let timerInterval = null;
 
+// ── TIME HELPERS ──────────────────────────────────────────────────────────────
+function getAgeMs(t) {
+  if (t.status === 'closed') return null;
+  const d = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
+  return Date.now() - d.getTime();
+}
+
+function formatAge(ms) {
+  if (ms === null) return null;
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h === 0) return m + 'm';
+  if (h < 24) return h + 'h ' + m + 'm';
+  return Math.floor(h/24) + 'd ' + (h%24) + 'h';
+}
+
+function ageClass(ms) {
+  if (ms === null) return 'done';
+  if (ms < 3600000)  return 'fresh';   // < 1h
+  if (ms < 14400000) return 'warn';    // < 4h
+  return 'overdue';
+}
+
+function getResolutionTime(t) {
+  if (t.status !== 'closed' || !t.closedAt || !t.createdAt) return null;
+  const created = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+  const closed  = t.closedAt?.toDate  ? t.closedAt.toDate()  : null;
+  if (!created || !closed) return null;
+  return closed.getTime() - created.getTime();
+}
+
+function formatDuration(ms) {
+  if (!ms) return '—';
+  const h = Math.floor(ms / 3600000);
+  if (h < 1) return Math.floor(ms/60000) + 'm';
+  if (h < 24) return h + 'h';
+  return Math.floor(h/24) + 'd';
+}
+
+// ── FIRESTORE ──────────────────────────────────────────────────────────────────
 function startListener() {
-  if (!db) { document.getElementById('tbody').innerHTML = '<div class="loading">Firebase not configured. Fill in FB_CONFIG values.</div>'; return; }
+  if (!db) {
+    document.getElementById('tbody').innerHTML = '<div class="loading">Firebase not configured. Fill in FB_CONFIG values.</div>';
+    return;
+  }
   db.collection('loft_tickets').orderBy('createdAt','desc').onSnapshot(snap => {
     tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    updateStats(); render();
+    updateStats();
+    updateCharts();
+    render();
     document.getElementById('sync').textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
   }, err => {
     document.getElementById('tbody').innerHTML = '<div class="loading">Could not load tickets. Check Firebase config and Firestore rules.</div>';
+    console.error(err);
+  });
+
+  // Live timer refresh every 30s
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    document.querySelectorAll('.live-timer').forEach(el => {
+      const tid = el.dataset.tid;
+      const t = tickets.find(x => x.id === tid);
+      if (!t || t.status === 'closed') return;
+      const ms = getAgeMs(t);
+      el.textContent = formatAge(ms);
+      el.className = 'timer live-timer ' + ageClass(ms);
+      el.dataset.tid = tid;
+    });
+    document.getElementById('st-ov').textContent = tickets.filter(t => t.status === 'open' && getAgeMs(t) >= 14400000).length;
+  }, 30000);
+}
+
+// ── STATS ──────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const open   = tickets.filter(t => t.status === 'open');
+  const closed = tickets.filter(t => t.status === 'closed');
+  const overdue = open.filter(t => getAgeMs(t) >= 14400000);
+
+  document.getElementById('st-all').textContent    = tickets.length;
+  document.getElementById('st-open').textContent   = open.length;
+  document.getElementById('st-closed').textContent = closed.length;
+  document.getElementById('st-un').textContent     = tickets.filter(t => !t.assignedTo && t.status === 'open').length;
+  document.getElementById('st-ov').textContent     = overdue.length;
+
+  const resTimes = closed.map(t => getResolutionTime(t)).filter(Boolean);
+  const avg = resTimes.length ? resTimes.reduce((a,b)=>a+b,0)/resTimes.length : null;
+  document.getElementById('st-avg').textContent = avg ? formatDuration(avg) : '—';
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+function updateCharts() {
+  updateCategoryChart();
+  updateTrendChart();
+  updateResponseBars();
+}
+
+function updateCategoryChart() {
+  const cats = ['cleaning','payment','agreement','legal'];
+  const counts = cats.map(c => tickets.filter(t => t.category === c).length);
+  const colors = ['#5599e0','#7dc464','#e0a030','#e05555'];
+
+  if (charts.cat) charts.cat.destroy();
+  const ctx = document.getElementById('chart-cat').getContext('2d');
+  charts.cat = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: cats.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+      datasets: [{ data: counts, backgroundColor: colors, borderColor: '#0a0a0a', borderWidth: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#777', font: { size: 11, family: 'Figtree' }, padding: 12, boxWidth: 10 } }
+      },
+      cutout: '68%'
+    }
   });
 }
 
-function updateStats() {
-  document.getElementById('st-all').textContent    = tickets.length;
-  document.getElementById('st-open').textContent   = tickets.filter(t => t.status === 'open').length;
-  document.getElementById('st-closed').textContent = tickets.filter(t => t.status === 'closed').length;
-  document.getElementById('st-un').textContent     = tickets.filter(t => !t.assignedTo).length;
+function updateTrendChart() {
+  const days = 7;
+  const labels = [];
+  const openCounts = [];
+  const closedCounts = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const dateStr = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    labels.push(dateStr);
+    const dayStart = new Date(d); dayStart.setHours(0,0,0,0);
+    const dayEnd   = new Date(d); dayEnd.setHours(23,59,59,999);
+    openCounts.push(tickets.filter(t => {
+      const cd = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+      return cd && cd >= dayStart && cd <= dayEnd && t.status === 'open';
+    }).length);
+    closedCounts.push(tickets.filter(t => {
+      const cd = t.closedAt?.toDate ? t.closedAt.toDate() : null;
+      return cd && cd >= dayStart && cd <= dayEnd;
+    }).length);
+  }
+
+  if (charts.trend) charts.trend.destroy();
+  const ctx = document.getElementById('chart-trend').getContext('2d');
+  charts.trend = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Raised', data: openCounts, backgroundColor: 'rgba(224,160,48,.6)', borderRadius: 4 },
+        { label: 'Closed', data: closedCounts, backgroundColor: 'rgba(125,196,100,.6)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#777', font: { size: 11, family: 'Figtree' }, boxWidth: 10 } }
+      },
+      scales: {
+        x: { ticks: { color: '#555', font: { size: 10 } }, grid: { color: '#1c1c1c' } },
+        y: { ticks: { color: '#555', font: { size: 10 }, stepSize: 1 }, grid: { color: '#1c1c1c' }, beginAtZero: true }
+      }
+    }
+  });
 }
 
+function updateResponseBars() {
+  const cats = ['cleaning','payment','agreement','legal'];
+  const maxMs = 24 * 3600000;
+
+  const rows = cats.map(cat => {
+    const catClosed = tickets.filter(t => t.category === cat && t.status === 'closed');
+    const times = catClosed.map(t => getResolutionTime(t)).filter(Boolean);
+    const avg = times.length ? times.reduce((a,b) => a+b, 0) / times.length : 0;
+    return { cat, avg, count: times.length };
+  });
+
+  const maxAvg = Math.max(...rows.map(r => r.avg), 1);
+  document.getElementById('rt-bars').innerHTML = rows.map(r => `
+    <div class="rt-row">
+      <span class="rt-label">${r.cat}</span>
+      <div class="rt-bar-wrap">
+        <div class="rt-bar" style="width:${r.avg ? Math.min(r.avg/maxAvg*100,100) : 0}%"></div>
+      </div>
+      <span class="rt-val">${r.avg ? formatDuration(r.avg) : '—'}</span>
+    </div>`).join('');
+}
+
+// ── FILTER + RENDER ────────────────────────────────────────────────────────────
 function setF(f, btn) {
   filter = f;
   document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
@@ -173,24 +411,32 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 function render() {
   const q = (document.getElementById('search').value || '').toLowerCase();
   let rows = [...tickets];
-  if (filter === 'open')   rows = rows.filter(t => t.status === 'open');
-  else if (filter === 'closed') rows = rows.filter(t => t.status === 'closed');
+
+  if (filter === 'open')    rows = rows.filter(t => t.status === 'open');
+  else if (filter === 'closed')  rows = rows.filter(t => t.status === 'closed');
+  else if (filter === 'overdue') rows = rows.filter(t => t.status === 'open' && getAgeMs(t) >= 14400000);
   else if (['cleaning','payment','agreement','legal'].includes(filter)) rows = rows.filter(t => t.category === filter);
+
   if (q) rows = rows.filter(t =>
     (t.memberName||'').toLowerCase().includes(q) ||
     (t.cabin||'').toLowerCase().includes(q) ||
     (t.description||'').toLowerCase().includes(q) ||
     (t.summary||'').toLowerCase().includes(q)
   );
+
   if (!rows.length) {
     document.getElementById('tbody').innerHTML = '<div class="empty"><strong>No tickets found</strong><p>Try adjusting your filters.</p></div>';
     return;
   }
+
   document.getElementById('tbody').innerHTML = rows.map(t => {
-    const d = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
-    const ds = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+    const d  = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
+    const ds = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
     const assigned = t.assignedTo || '';
-    const summary = esc(t.summary || (t.description||'').slice(0,55));
+    const summary  = esc((t.summary || (t.description||'').slice(0,55)));
+    const ms       = getAgeMs(t);
+    const ageStr   = t.status === 'closed' ? formatDuration(getResolutionTime(t)||0) : formatAge(ms);
+    const cls      = t.status === 'closed' ? 'done' : ageClass(ms);
     return `<div class="tr" onclick="openMod('${t.id}')">
       <div class="tc tid">#${t.id.slice(0,8).toUpperCase()}</div>
       <div class="tc tsub">${esc(t.memberName||'Unknown')}<small>${summary}${(t.description||'').length>55?'...':''}</small></div>
@@ -198,26 +444,35 @@ function render() {
       <div class="tc"><span class="badge ${t.status||'open'}">${t.status||'open'}</span></div>
       <div class="tc"><span class="badge ${assigned?'':'un'}">${assigned||'Unassigned'}</span></div>
       <div class="tc ts">${ds}</div>
+      <div class="tc"><span class="timer ${cls} live-timer" data-tid="${t.id}">${ageStr||'—'}</span></div>
       <div class="tc"><span style="font-size:11px;color:var(--green)">View</span></div>
     </div>`;
   }).join('');
 }
 
+// ── MODAL ─────────────────────────────────────────────────────────────────────
 function openMod(id) {
   const t = tickets.find(x => x.id === id); if (!t) return;
-  const sid = t.id.slice(0,8).toUpperCase();
-  document.getElementById('mt').textContent = 'Ticket #' + sid;
-  const d  = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
-  const cd = t.closedAt?.toDate  ? t.closedAt.toDate()  : null;
+  const sid  = t.id.slice(0,8).toUpperCase();
+  const d    = t.createdAt?.toDate ? t.createdAt.toDate() : new Date();
+  const cd   = t.closedAt?.toDate  ? t.closedAt.toDate()  : null;
+  const ms   = getAgeMs(t);
+  const res  = getResolutionTime(t);
 
+  document.getElementById('mt').textContent = 'Ticket #' + sid;
   document.getElementById('mb').innerHTML = `
-    <div class="mf"><label>Member</label><div class="v">${esc(t.memberName||'—')}</div></div>
-    <div class="mf"><label>Space / Cabin</label><div class="v">${esc(t.cabin||'—')}</div></div>
-    <div class="mf"><label>Email</label><div class="v">${esc(t.email||'Not provided')}</div></div>
-    <div class="mf"><label>Category</label><div class="v"><span class="badge ${t.category}">${t.category}</span></div></div>
-    <div class="mf"><label>Status</label><div class="v"><span class="badge ${t.status}">${t.status}</span></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="mf"><label>Member</label><div class="v">${esc(t.memberName||'—')}</div></div>
+      <div class="mf"><label>Space</label><div class="v">${esc(t.cabin||'—')}</div></div>
+      <div class="mf"><label>Email</label><div class="v">${esc(t.email||'Not provided')}</div></div>
+      <div class="mf"><label>Category</label><div class="v"><span class="badge ${t.category}">${t.category}</span></div></div>
+      <div class="mf"><label>Status</label><div class="v"><span class="badge ${t.status}">${t.status}</span></div></div>
+      <div class="mf"><label>${t.status==='open'?'Open for':'Resolved in'}</label>
+        <div class="v"><span class="timer ${t.status==='open'?ageClass(ms):'done'}">${t.status==='open'?formatAge(ms):formatDuration(res)||'—'}</span></div>
+      </div>
+    </div>
     <div class="mf"><label>Raised On</label><div class="v ts">${d.toLocaleString('en-IN')}</div></div>
-    ${cd ? `<div class="mf"><label>Closed On</label><div class="v ts">${cd.toLocaleString('en-IN')}</div></div>` : ''}
+    ${cd?`<div class="mf"><label>Closed On</label><div class="v ts">${cd.toLocaleString('en-IN')}</div></div>`:''}
     <div class="divider"></div>
     <div class="mf"><label>Description</label><div class="desc">${esc(t.description||'—')}</div></div>
     <div class="divider"></div>
@@ -243,7 +498,7 @@ function openMod(id) {
     ma.appendChild(cb);
   } else {
     const rb = document.createElement('button');
-    rb.className = 'mbtn gh'; rb.textContent = 'Reopen Ticket';
+    rb.className = 'mbtn gh'; rb.textContent = 'Reopen';
     rb.onclick = () => reopenTicket(t.id);
     ma.appendChild(rb);
   }
@@ -274,9 +529,8 @@ async function updAssign(id, val) {
 
 async function saveNotes(id, btn) {
   if (!db) return;
-  const notes = document.getElementById('m-notes').value;
   try {
-    await db.collection('loft_tickets').doc(id).update({ staffNotes: notes, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection('loft_tickets').doc(id).update({ staffNotes: document.getElementById('m-notes').value, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
     btn.textContent = 'Saved'; setTimeout(() => { btn.textContent = 'Save Notes'; }, 2000);
   } catch(e) { console.error(e); }
 }
@@ -286,15 +540,8 @@ async function closeTicket(id, t) {
   try {
     await db.collection('loft_tickets').doc(id).update({ status: 'closed', closedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
     if (t.email && EJ_PK !== 'YOUR_EMAILJS_PUBLIC_KEY') {
-      try {
-        await emailjs.send(EJ_SVC, EJ_CLOSE_TPL, {
-          ticket_id: id.slice(0,8).toUpperCase(),
-          member_name: t.memberName || '',
-          category: t.category,
-          description: t.description,
-          to_email: t.email
-        });
-      } catch(e) { console.error('Close email:', e); }
+      try { await emailjs.send(EJ_SVC, EJ_CLOSE_TPL, { ticket_id: id.slice(0,8).toUpperCase(), member_name: t.memberName||'', category: t.category, description: t.description, to_email: t.email }); }
+      catch(e) { console.error('Close email:', e); }
     }
     document.getElementById('ov').classList.add('hidden');
   } catch(e) { console.error(e); }

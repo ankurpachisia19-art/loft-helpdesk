@@ -8,71 +8,103 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
-:root{--bg:#000;--s1:#0d0d0d;--s2:#141414;--border:#1e1e1e;--green:#7dc464;--gdim:rgba(125,196,100,.1);--text:#f0f0f0;--dim:#555;--mid:#888;--botbg:#0b160a;--botb:rgba(125,196,100,.15)}
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#000;--s1:#0a0a0a;--s2:#111;--border:#1c1c1c;
+  --green:#7dc464;--gdim:rgba(125,196,100,.1);--gborder:rgba(125,196,100,.2);
+  --text:#f0f0f0;--dim:#444;--mid:#777;
+  --botbg:#060f05;--botborder:rgba(125,196,100,.18);
+  --font:'Figtree','Helvetica Neue',Helvetica,Arial,sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--s1);flex-shrink:0}
-.lw{display:flex;align-items:center;gap:10px}
-.lm{width:34px;height:34px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#000;letter-spacing:-1px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--s1);flex-shrink:0}
+.lw{display:flex;align-items:center;gap:11px}
+.lm{width:36px;height:36px;background:var(--green);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:#000;letter-spacing:-1px;font-family:var(--font)}
 .lt{display:flex;flex-direction:column}
-.ln{font-size:14px;font-weight:700;letter-spacing:2.5px}
+.ln{font-size:14px;font-weight:700;letter-spacing:2.5px;color:var(--text)}
 .ls{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
-.sp{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:var(--gdim);padding:4px 10px;border-radius:20px;border:1px solid rgba(125,196,100,.2)}
+.sp{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:var(--gdim);padding:4px 11px;border-radius:20px;border:1px solid var(--gborder);font-weight:500}
 .sd{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* CHIPS */
 .cb{display:flex;gap:6px;padding:9px 14px;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--s1);flex-shrink:0;scrollbar-width:none}
 .cb::-webkit-scrollbar{display:none}
-.ch{flex-shrink:0;background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:5px 13px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit}
-.ch:hover{background:var(--gdim);border-color:rgba(125,196,100,.35);color:var(--green)}
-#chat{flex:1;overflow-y:auto;padding:18px 14px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:#1a1a1a transparent}
+.ch{flex-shrink:0;background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:5px 13px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:var(--font);font-weight:500;letter-spacing:.2px}
+.ch:hover{background:var(--gdim);border-color:rgba(125,196,100,.3);color:var(--green)}
+
+/* CHAT */
+#chat{flex:1;overflow-y:auto;padding:20px 15px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:#161616 transparent}
 #chat::-webkit-scrollbar{width:3px}
-#chat::-webkit-scrollbar-thumb{background:#1a1a1a}
-.msg{display:flex;gap:8px;max-width:90%;animation:fu .25s ease}
-@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#chat::-webkit-scrollbar-thumb{background:#161616}
+
+/* MESSAGES */
+.msg{display:flex;gap:9px;max-width:88%;animation:fu .25s ease}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 .msg.user{align-self:flex-end;flex-direction:row-reverse}
 .msg.bot{align-self:flex-start}
-.av{width:28px;height:28px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800}
-.bot .av{background:var(--green);color:#000;font-size:13px}
-.user .av{background:#1c1c1c;color:var(--dim);font-size:9px}
-.bb{padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.65;max-width:100%}
-.bot .bb{background:var(--botbg);border:1px solid var(--botb);border-radius:3px 12px 12px 12px}
-.user .bb{background:#171717;border:1px solid var(--border);border-radius:12px 3px 12px 12px}
-.bb p{margin-bottom:5px}.bb p:last-child{margin-bottom:0}
+.av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:var(--font)}
+.bot .av{background:var(--green);color:#000;font-size:14px}
+.user .av{background:#161616;color:var(--dim);font-size:9px;font-weight:600}
+.bb{padding:11px 15px;border-radius:13px;font-size:14px;line-height:1.7;max-width:100%;font-weight:400}
+.bot .bb{background:var(--botbg);border:1px solid var(--botborder);border-radius:3px 13px 13px 13px}
+.user .bb{background:#131313;border:1px solid var(--border);border-radius:13px 3px 13px 13px}
+.bb p{margin-bottom:6px}.bb p:last-child{margin-bottom:0}
 .bb strong{color:var(--green);font-weight:600}
-.bb ul{padding-left:16px;margin:4px 0}.bb li{margin:2px 0}
-.typing .bb{padding:13px 16px}
+.bb ul{padding-left:17px;margin:5px 0}.bb li{margin:3px 0}
+
+/* TYPING */
+.typing .bb{padding:14px 17px}
 .dots{display:flex;gap:4px;align-items:center}
-.dots span{width:5px;height:5px;background:var(--green);border-radius:50%;animation:bounce 1.1s infinite;opacity:.7}
+.dots span{width:5px;height:5px;background:var(--green);border-radius:50%;animation:bounce 1.1s infinite;opacity:.6}
 .dots span:nth-child(2){animation-delay:.18s}.dots span:nth-child(3){animation-delay:.36s}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.rc{background:#060f06;border:1px solid rgba(125,196,100,.25);border-radius:10px;padding:14px;margin-top:4px}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* FEEDBACK */
+.feedback-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.fb-label{font-size:11px;color:var(--mid)}
+.fb-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;transition:all .2s;color:var(--mid);font-family:var(--font)}
+.fb-btn:hover{border-color:rgba(125,196,100,.3);color:var(--green);background:var(--gdim)}
+.fb-btn.selected-good{border-color:var(--green);color:var(--green);background:var(--gdim)}
+.fb-btn.selected-bad{border-color:#e05555;color:#e05555;background:rgba(224,85,85,.08)}
+.fb-thanks{font-size:11px;color:var(--green)}
+
+/* REQUEST CARD */
+.rc{background:#040c04;border:1px solid rgba(125,196,100,.22);border-radius:11px;padding:14px;margin-top:5px}
 .rch{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .rcat{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);background:var(--gdim);padding:3px 8px;border-radius:4px}
 .rtid{font-size:10px;color:var(--dim);font-family:monospace}
-.rsm{font-size:13px;font-weight:600;margin-bottom:6px}
+.rsm{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
 .rmt{font-size:12px;color:var(--mid);line-height:1.8;margin-bottom:10px}
 .rmt span{color:var(--text)}
-.rst{font-size:11px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.rst{font-size:11px;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:5px;font-weight:500}
 .rst::before{content:'';display:inline-block;width:5px;height:5px;background:var(--green);border-radius:50%}
 .ra{display:flex;gap:7px;flex-wrap:wrap}
-.rb{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all .2s;font-family:inherit}
+.rb{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all .2s;font-family:var(--font)}
 .rb.wa{background:#0e6e38;color:#fff}.rb.wa:hover{background:#0a5a2e}
 .rb.cp{background:var(--s2);color:var(--mid);border:1px solid var(--border)}.rb.cp:hover{color:var(--text)}
-.wl{align-self:center;text-align:center;padding:24px 16px;max-width:320px}
-.wlo{width:50px;height:50px;background:var(--green);border-radius:12px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#000;letter-spacing:-1.5px}
-.wl h2{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px}
-.wl p{font-size:13px;color:var(--dim);line-height:1.6}
+
+/* WELCOME */
+.wl{align-self:center;text-align:center;padding:28px 18px;max-width:320px}
+.wlo{width:52px;height:52px;background:var(--green);border-radius:13px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;color:#000;letter-spacing:-1.5px;font-family:var(--font)}
+.wl h2{font-size:19px;font-weight:700;letter-spacing:-.4px;margin-bottom:7px;color:var(--text)}
+.wl p{font-size:13px;color:var(--dim);line-height:1.65}
 .wcs{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:16px}
-.wc{background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.wc{background:var(--s2);border:1px solid var(--border);color:var(--mid);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:var(--font);font-weight:500}
 .wc:hover{background:var(--gdim);border-color:rgba(125,196,100,.3);color:var(--green)}
-.ia{padding:10px 14px 12px;border-top:1px solid var(--border);background:var(--s1);flex-shrink:0}
+
+/* INPUT */
+.ia{padding:11px 15px 13px;border-top:1px solid var(--border);background:var(--s1);flex-shrink:0}
 .ir{display:flex;gap:8px;align-items:flex-end}
-#mi{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;max-height:110px;min-height:42px;transition:border-color .2s;line-height:1.5}
+#mi{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:11px;padding:11px 15px;color:var(--text);font-size:14px;font-family:var(--font);resize:none;outline:none;max-height:110px;min-height:43px;transition:border-color .2s;line-height:1.55;font-weight:400}
 #mi:focus{border-color:rgba(125,196,100,.35)}
 #mi::placeholder{color:var(--dim)}
-#sb{width:42px;height:42px;background:var(--green);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+#sb{width:43px;height:43px;background:var(--green);border:none;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
 #sb:hover{background:#8fd670;transform:scale(1.04)}
-#sb:disabled{background:#222;cursor:not-allowed;transform:none}
+#sb:disabled{background:#1a1a1a;cursor:not-allowed;transform:none}
 #sb svg{width:17px;height:17px;fill:#000}
 .ih{font-size:10px;color:var(--dim);margin-top:6px;text-align:center;letter-spacing:.3px}
 </style>
@@ -89,22 +121,24 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
   <button class="ch" onclick="sc('What are the house rules?')">House Rules</button>
   <button class="ch" onclick="sc('What are the operating hours?')">Hours</button>
   <button class="ch" onclick="sc('What is the monthly fee?')">Pricing</button>
+  <button class="ch" onclick="sc('What is the WiFi password?')">WiFi Password</button>
   <button class="ch" onclick="sc('I want to raise a cleaning request')">Cleaning</button>
   <button class="ch" onclick="sc('I have a payment or invoice query')">Payments</button>
   <button class="ch" onclick="sc('I need help with my membership agreement')">Agreement</button>
   <button class="ch" onclick="sc('I have a legal question')">Legal</button>
   <button class="ch" onclick="sc('How do I book a meeting room?')">Meeting Room</button>
+  <button class="ch" onclick="sc('I want to give feedback about LOFT')">Feedback</button>
 </div>
 <div id="chat">
   <div class="wl">
     <div class="wlo">L</div>
     <h2>Hi, welcome to LOFT.</h2>
-    <p>Ask anything about the space, membership, or house rules. You can also raise a request for cleaning, payments, agreements, or legal matters.</p>
+    <p>Ask anything about the space, membership, or house rules. Raise a request or share feedback.</p>
     <div class="wcs">
       <button class="wc" onclick="sc('What are the rules at LOFT?')">Rules and policies</button>
       <button class="wc" onclick="sc('Tell me about LOFT culture')">LOFT culture</button>
       <button class="wc" onclick="sc('I want to raise a request')">Raise a request</button>
-      <button class="wc" onclick="sc('My internet is not working')">Report an issue</button>
+      <button class="wc" onclick="sc('I want to give feedback')">Give feedback</button>
     </div>
   </div>
 </div>
@@ -117,7 +151,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:12p
 </div>
 
 <script>
-// ── FILL THESE IN ─────────────────────────────────────────────────────────────
 const FB_CONFIG = {
   apiKey:            "AIzaSyDX0V-U0Wj_8SPVeiCgnC601HNLsOeDbSg",
   authDomain:        "loft-finance.firebaseapp.com",
@@ -126,12 +159,12 @@ const FB_CONFIG = {
   messagingSenderId: "192587330227",
   appId:             "1:192587330227:web:0ef42d1d1486dda87936c6"
 };
-const EJ_PK       = 'oOFB5tkG6YdSTZQuc';
-const EJ_SVC      = 'service_i4gknms';
-const EJ_NEW_TPL  = 'template_f6xldf9';
-const STAFF_EMAIL = 'help@loftcoworks.in';
-const WA          = '918600888073';
-// ─────────────────────────────────────────────────────────────────────────────
+const EJ_PK          = 'oOFB5tkG6YdSTZQuc';
+const EJ_SVC         = 'service_i4gknms';
+const EJ_NEW_TPL     = 'template_f6xldf9';
+const EJ_CONFIRM_TPL = 'YOUR_MEMBER_CONFIRM_TEMPLATE'; // member confirmation on raise
+const STAFF_EMAIL    = 'help@loftcoworks.in';
+const WA             = '918600888073';
 
 let db = null;
 try { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); db = firebase.firestore(); } catch(e) {}
@@ -142,6 +175,10 @@ const SYSTEM = `You are the LOFT Coworking Help Desk AI. LOFT is a community-fir
 LOCATIONS:
 - LOFT 1: IT Park, Nagpur — 44-45 seats, 8 cabins, operational
 - LOFT 2: Abhyankar Nagar, Nagpur — 125-127 seats, 8 cabins + workstations + community space, launching June 15 2026
+
+WIFI CREDENTIALS:
+- LOFT 1 (IT Park): Username / Network name: Airtel_Loft_ITPark | Password: Loft@123
+- LOFT 2: Details to be updated
 
 PRICING:
 - Monthly membership: Rs 7,500 per seat. Security deposit refundable. GST 18%.
@@ -188,25 +225,37 @@ The six member archetypes:
 
 Culture: Know member names first. Never treat a member like a transaction — lead with the human, then the admin. 2-minute rule: fix anything that takes under 2 minutes right now. Be the reason someone had a good day.
 
-Programmes: LOFT Afterhours (evening events, everyone is in — no exceptions), Founding Member Circle (first cohort, treat them like OGs), Wishboard (community board), Flea Fair Network (how LOFT finds builder-type members), Builder Tags (archetype badges).
+Programmes: LOFT Afterhours (evening events, everyone is in), Founding Member Circle (first cohort, OGs), Wishboard (community board), Flea Fair Network, Builder Tags (archetype badges).
 
 Inclusion: 100% women-led on the ground. Safe space — physically, emotionally, professionally. One standard for everyone. Respect is non-negotiable regardless of gender, religion, sexuality, caste, or background. LGBT+ members and colleagues belong here completely.
 
 REQUEST HANDLING:
 Categories: CLEANING (housekeeping, cleanliness, garbage, toilet, supplies, pests, repair), PAYMENT (invoice, confirmation, receipt, overdue, billing dispute), AGREEMENT (membership, contract, renewal, upgrade, onboarding, registered address), LEGAL (compliance, GST, CA queries, legal documents).
 
-Once you identify a request, ask for all details in a single message like this:
+When someone wants to raise a request, ask for all details in one message:
 "To raise this for you, I need a few details — please share all at once:
 - Your full name
 - Your cabin number and location (LOFT 1 or LOFT 2)
 - Your email address
 - Description of the issue"
 
-Once they reply with all the details, confirm: "Got it. Should I raise this as a ticket and notify the LOFT team?"
+Once they reply with all details, confirm: "Got it. Should I raise this as a ticket and notify the LOFT team?"
 After they say yes, output this at the very END of your message:
 <<<REQUEST_JSON
 {"category":"cleaning|payment|agreement|legal","name":"VALUE","cabin":"VALUE","email":"VALUE","description":"VALUE","summary":"VALUE"}
 REQUEST_JSON>>>
+
+FEEDBACK HANDLING:
+When someone wants to give feedback about LOFT, ask them:
+"Thank you for sharing. Please tell us:
+- Your name (optional)
+- What you loved or what could be better
+- Any specific suggestion"
+
+After they share, thank them warmly and output this at the very END of your message:
+<<<FEEDBACK_JSON
+{"name":"VALUE","feedback":"VALUE","sentiment":"positive|negative|mixed"}
+FEEDBACK_JSON>>>
 
 TONE: Friendly, direct, brief. No jargon. Warm and human. Max 4-5 sentences for simple answers. Bullets only when listing multiple things. If unsure, say "For this one, speak directly with the LOFT team."`;
 
@@ -227,7 +276,17 @@ async function saveTicket(r) {
   } catch(e) { console.error('Firestore:', e); return null; }
 }
 
-async function sendEmail(r, tid) {
+async function saveFeedback(f) {
+  if (!db) return;
+  try {
+    await db.collection('loft_feedback').add({
+      name: f.name || 'Anonymous', feedback: f.feedback, sentiment: f.sentiment,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) { console.error('Feedback save:', e); }
+}
+
+async function sendStaffEmail(r, tid) {
   if (EJ_PK === 'YOUR_EMAILJS_PUBLIC_KEY') return;
   try {
     await emailjs.send(EJ_SVC, EJ_NEW_TPL, {
@@ -237,10 +296,24 @@ async function sendEmail(r, tid) {
       member_email: r.email || 'Not provided',
       description: r.description, to_email: STAFF_EMAIL
     });
-  } catch(e) { console.error('EmailJS:', e); }
+  } catch(e) { console.error('Staff email:', e); }
 }
 
-function addMsg(role, text) {
+async function sendMemberConfirm(r, tid) {
+  if (!r.email || EJ_CONFIRM_TPL === 'YOUR_MEMBER_CONFIRM_TEMPLATE') return;
+  try {
+    await emailjs.send(EJ_SVC, EJ_CONFIRM_TPL, {
+      ticket_id: tid ? tid.slice(0,8).toUpperCase() : 'N/A',
+      category: r.category.toUpperCase(),
+      member_name: r.name, cabin: r.cabin,
+      description: r.description, to_email: r.email
+    });
+  } catch(e) { console.error('Member confirm:', e); }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function addMsg(role, text, showFeedback = false) {
   const chat = document.getElementById('chat');
   const wl = chat.querySelector('.wl'); if (wl) wl.remove();
   const w = document.createElement('div'); w.className = 'msg ' + role;
@@ -252,8 +325,31 @@ function addMsg(role, text) {
     .replace(/((<li>.*?<\/li>\n?)+)/gs, '<ul>$1</ul>')
     .split('\n\n').map(p => '<p>' + p.replace(/\n/g,'<br>') + '</p>').join('');
   bb.innerHTML = fmt;
+
+  if (role === 'bot' && showFeedback) {
+    const fr = document.createElement('div'); fr.className = 'feedback-row';
+    fr.innerHTML = `<span class="fb-label">Was this helpful?</span>
+      <button class="fb-btn" onclick="submitFeedback(this,'good')">Yes</button>
+      <button class="fb-btn" onclick="submitFeedback(this,'bad')">No</button>`;
+    bb.appendChild(fr);
+  }
+
   w.appendChild(av); w.appendChild(bb);
   chat.appendChild(w); chat.scrollTop = chat.scrollHeight;
+}
+
+function submitFeedback(btn, type) {
+  const row = btn.closest('.feedback-row');
+  row.querySelectorAll('.fb-btn').forEach(b => b.classList.remove('selected-good','selected-bad'));
+  btn.classList.add(type === 'good' ? 'selected-good' : 'selected-bad');
+  if (db) {
+    db.collection('loft_chat_feedback').add({
+      type, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(e => console.error(e));
+  }
+  setTimeout(() => {
+    row.innerHTML = '<span class="fb-thanks">Thank you for the feedback.</span>';
+  }, 600);
 }
 
 function showTyping() {
@@ -266,16 +362,17 @@ function hideTyping() { const el = document.getElementById('typing'); if (el) el
 
 async function showCard(r) {
   const tid = await saveTicket(r);
-  await sendEmail(r, tid);
+  await sendStaffEmail(r, tid);
+  await sendMemberConfirm(r, tid);
   const sid = tid ? tid.slice(0,8).toUpperCase() : 'LOCAL';
   const wamsg = `LOFT ${r.category.toUpperCase()} REQUEST%0A%0ATicket: %23${sid}%0AMember: ${encodeURIComponent(r.name)}%0ASpace: ${encodeURIComponent(r.cabin)}%0AEmail: ${encodeURIComponent(r.email||'N/A')}%0A%0A${encodeURIComponent(r.description)}`;
   const chat = document.getElementById('chat');
   const w = document.createElement('div'); w.className = 'msg bot'; w.style.animation = 'fu .25s ease';
   w.innerHTML = `<div class="av">L</div><div class="bb"><div class="rc">
     <div class="rch"><span class="rcat">${r.category}</span><span class="rtid">#${sid}</span></div>
-    <div class="rsm">${r.summary}</div>
+    <div class="rsm">${esc(r.summary)}</div>
     <div class="rmt">Member: <span>${esc(r.name)}</span><br>Space: <span>${esc(r.cabin)}</span><br>Email: <span>${esc(r.email||'Not provided')}</span></div>
-    <div class="rst">Ticket raised — team notified by email</div>
+    <div class="rst">Ticket raised — team notified${r.email ? ' · confirmation sent to your email' : ''}</div>
     <div class="ra">
       <a class="rb wa" href="https://wa.me/${WA}?text=${wamsg}" target="_blank">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -287,29 +384,35 @@ async function showCard(r) {
   chat.appendChild(w); chat.scrollTop = chat.scrollHeight;
 }
 
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
 function cpTicket(btn, id, cat, name, cabin, desc) {
   navigator.clipboard.writeText(`LOFT ${cat.toUpperCase()} REQUEST\nTicket: #${id}\nMember: ${name}\nSpace: ${cabin}\n\n${desc}`)
     .then(() => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy details'; }, 2000); });
 }
 
+let msgCount = 0;
 function parse(raw) {
-  const m = raw.match(/<<<REQUEST_JSON\n([\s\S]+?)\nREQUEST_JSON>>>/);
-  const txt = raw.replace(/<<<REQUEST_JSON[\s\S]+?REQUEST_JSON>>>/g, '').trim();
-  if (txt) { history.push({ role: 'assistant', content: txt }); addMsg('bot', txt); }
-  if (m) { try { showCard(JSON.parse(m[1])); } catch(e) { console.error(e); } }
+  const reqMatch = raw.match(/<<<REQUEST_JSON\n([\s\S]+?)\nREQUEST_JSON>>>/);
+  const fbMatch  = raw.match(/<<<FEEDBACK_JSON\n([\s\S]+?)\nFEEDBACK_JSON>>>/);
+  let txt = raw
+    .replace(/<<<REQUEST_JSON[\s\S]+?REQUEST_JSON>>>/g, '')
+    .replace(/<<<FEEDBACK_JSON[\s\S]+?FEEDBACK_JSON>>>/g, '')
+    .trim();
+
+  msgCount++;
+  const showFb = !reqMatch && !fbMatch && msgCount % 3 === 0;
+
+  if (txt) { history.push({ role: 'assistant', content: txt }); addMsg('bot', txt, showFb); }
+  if (reqMatch) { try { showCard(JSON.parse(reqMatch[1])); } catch(e) { console.error(e); } }
+  if (fbMatch)  { try { saveFeedback(JSON.parse(fbMatch[1])); } catch(e) { console.error(e); } }
 }
 
 async function callAPI(msg) {
   history.push({ role: 'user', content: msg });
-  // Calls Netlify function — API key never exposed to browser
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
+      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
       system: SYSTEM,
       messages: history.map(m => ({ role: m.role, content: m.content }))
     })
@@ -326,11 +429,8 @@ async function send() {
   inp.value = ''; inp.style.height = 'auto';
   loading = true; document.getElementById('sb').disabled = true;
   addMsg('user', txt); showTyping();
-  try {
-    const r = await callAPI(txt); hideTyping(); parse(r);
-  } catch(e) {
-    hideTyping(); addMsg('bot', 'Something went wrong. Please try again or contact the LOFT team directly.'); console.error(e);
-  }
+  try { const r = await callAPI(txt); hideTyping(); parse(r); }
+  catch(e) { hideTyping(); addMsg('bot', 'Something went wrong. Please try again or contact the LOFT team directly.'); console.error(e); }
   loading = false; document.getElementById('sb').disabled = false; inp.focus();
 }
 

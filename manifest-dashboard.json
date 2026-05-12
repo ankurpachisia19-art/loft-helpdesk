@@ -1,0 +1,14 @@
+{
+  "name": "LOFT Dashboard",
+  "short_name": "LOFT Staff",
+  "description": "LOFT Coworking Staff Dashboard — manage tickets and members.",
+  "start_url": "/loft-dashboard.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#7dc464",
+  "orientation": "landscape",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LOFT Help Desk</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7dc464">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LOFT">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -147,7 +154,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
     <textarea id="mi" rows="1" placeholder="Ask anything about LOFT..." onkeydown="hk(event)" oninput="ar(this)"></textarea>
     <button id="sb" onclick="send()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
   </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
   <div class="ih">LOFT Coworking · Nagpur</div>
+  <button id="transcript-btn" onclick="sendTranscript()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:10px;color:var(--mid);cursor:pointer;font-family:var(--font);transition:all .2s" onmouseover="this.style.color='var(--green)';this.style.borderColor='rgba(125,196,100,.3)'" onmouseout="this.style.color='var(--mid)';this.style.borderColor='var(--border)'">Send transcript</button>
+</div>
 </div>
 
 <script>
@@ -164,7 +174,7 @@ const EJ_SVC         = 'service_i4gknms';
 const EJ_NEW_TPL     = 'template_f6xldf9';
 const EJ_CONFIRM_TPL = 'YOUR_MEMBER_CONFIRM_TEMPLATE'; // member confirmation on raise
 const STAFF_EMAIL    = 'help@loftcoworks.in';
-const WA             = '918600888073';
+const WA             = '918600888073'; // Ankur
 
 let db = null;
 try { if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG); db = firebase.firestore(); } catch(e) {}
@@ -474,6 +484,15 @@ async function saveFeedback(f) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   } catch(e) { console.error('Feedback save:', e); }
+
+  // WhatsApp Ankur with the feedback
+  const msg = encodeURIComponent(
+    'LOFT Feedback Received' +
+    '\n\nFrom: ' + (f.name || 'Anonymous') +
+    '\nSentiment: ' + (f.sentiment || 'unknown') +
+    '\n\n' + f.feedback
+  );
+  window.open('https://wa.me/' + WA + '?text=' + msg, '_blank');
 }
 
 async function sendStaffEmail(r, tid) {
@@ -657,6 +676,67 @@ async function send() {
 }
 
 function sc(t) { document.getElementById('mi').value = t; send(); }
+
+function buildTranscript() {
+  const lines = [];
+  lines.push('LOFT Help Desk — Chat Transcript');
+  lines.push('Date: ' + new Date().toLocaleString('en-IN'));
+  lines.push('---');
+  history.forEach(m => {
+    const role = m.role === 'user' ? 'Member' : 'LOFT AI';
+    lines.push(role + ': ' + m.content.replace(/\*\*/g,'').replace(/
+/g,' '));
+  });
+  return lines.join('\n');
+}
+
+function sendTranscript() {
+  if (history.length < 2) {
+    alert('No conversation to send yet.');
+    return;
+  }
+  const transcript = buildTranscript();
+  const btn = document.getElementById('transcript-btn');
+  
+  // Show options
+  const choice = confirm('Send transcript to:\n\nOK = WhatsApp\nCancel = Email');
+  
+  if (choice) {
+    // WhatsApp
+    const msg = encodeURIComponent(transcript.slice(0, 1500) + (transcript.length > 1500 ? '\n[truncated]' : ''));
+    window.open('https://wa.me/' + WA + '?text=' + msg, '_blank');
+  } else {
+    // Email via EmailJS
+    if (EJ_PK === 'YOUR_EMAILJS_PUBLIC_KEY') {
+      alert('Email not configured yet.');
+      return;
+    }
+    emailjs.send(EJ_SVC, EJ_NEW_TPL, {
+      ticket_id: 'TRANSCRIPT',
+      category: 'CHAT TRANSCRIPT',
+      member_name: 'Member',
+      cabin: 'N/A',
+      member_email: 'N/A',
+      description: transcript.slice(0, 3000),
+      to_email: STAFF_EMAIL
+    }).then(() => {
+      btn.textContent = 'Sent';
+      setTimeout(() => { btn.textContent = 'Send transcript'; }, 3000);
+    }).catch(e => {
+      console.error(e);
+      alert('Could not send. Try WhatsApp instead.');
+    });
+  }
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW failed:', e));
+  });
+}
 function hk(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
 function ar(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
 </script>

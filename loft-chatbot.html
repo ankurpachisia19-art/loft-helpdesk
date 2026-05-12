@@ -684,8 +684,7 @@ function buildTranscript() {
   lines.push('---');
   history.forEach(m => {
     const role = m.role === 'user' ? 'Member' : 'LOFT AI';
-    lines.push(role + ': ' + m.content.replace(/\*\*/g,'').replace(/
-/g,' '));
+    lines.push(role + ': ' + m.content.replace(/\*\*/g,'').replace(/\n/g,' '));
   });
   return lines.join('\n');
 }

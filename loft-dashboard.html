@@ -63,8 +63,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
 /* TABLE */
 .tw{background:#0e0e0e;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden}
-.th{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:10px 16px;border-bottom:1px solid #2a2a2a;font-size:10px;color:#bbb;letter-spacing:1px;text-transform:uppercase;font-weight:600}
-.tr{display:grid;grid-template-columns:88px 1fr 105px 115px 125px 105px 90px 70px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;align-items:center}
+.th{display:grid;grid-template-columns:88px 1fr 110px 120px 130px 110px 70px;padding:10px 16px;border-bottom:1px solid #2a2a2a;font-size:10px;color:#bbb;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.tr{display:grid;grid-template-columns:88px 1fr 110px 120px 130px 110px 70px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;align-items:center}
 .tr:last-child{border-bottom:none}.tr:hover{background:var(--s3)}
 .tc{font-size:13px;padding-right:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tid{font-family:monospace;font-size:11px;color:var(--mid)}
@@ -81,11 +81,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .badge.un{background:var(--s2);color:var(--dim);border:1px solid var(--border)}
 
 /* TIMER BADGE */
-.timer{font-size:11px;font-family:monospace;padding:3px 7px;border-radius:4px;font-weight:600}
-.timer.fresh{color:var(--green);background:rgba(125,196,100,.08);border:1px solid rgba(125,196,100,.15)}
-.timer.warn{color:var(--amber);background:rgba(224,160,48,.08);border:1px solid rgba(224,160,48,.18)}
-.timer.overdue{color:var(--red);background:rgba(224,85,85,.08);border:1px solid rgba(224,85,85,.18)}
-.timer.done{color:var(--dim);background:var(--s2);border:1px solid var(--border)}
+
 
 .empty{padding:60px;text-align:center;color:var(--mid)}.empty p{font-size:13px;margin-top:6px}
 .loading{padding:40px;text-align:center;color:var(--mid);font-size:13px}
@@ -135,8 +131,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     <div class="stat o"><div class="sn" id="st-open">—</div><div class="sl">Open</div></div>
     <div class="stat c"><div class="sn" id="st-closed">—</div><div class="sl">Closed</div></div>
     <div class="stat u"><div class="sn" id="st-un">—</div><div class="sl">Unassigned</div></div>
-    <div class="stat ov"><div class="sn" id="st-ov">—</div><div class="sl">Overdue (4h+)</div></div>
-    <div class="stat"><div class="sn" id="st-avg" style="color:var(--blue)">—</div><div class="sl">Avg Response</div></div>
+    
+    
   </div>
 
   <!-- CHARTS -->
@@ -162,7 +158,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     <button class="fb active" onclick="setF('all',this)">All</button>
     <button class="fb" onclick="setF('open',this)">Open</button>
     <button class="fb" onclick="setF('closed',this)">Closed</button>
-    <button class="fb" onclick="setF('overdue',this)">Overdue</button>
+    
     <button class="fb" onclick="setF('cleaning',this)">Cleaning</button>
     <button class="fb" onclick="setF('payment',this)">Payment</button>
     <button class="fb" onclick="setF('agreement',this)">Agreement</button>
@@ -174,7 +170,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
   <div class="tw">
     <div class="th">
       <div>Ticket</div><div>Member / Issue</div><div>Category</div>
-      <div>Status</div><div>Assigned</div><div>Raised</div><div>Age / Timer</div><div>Action</div>
+      <div>Status</div><div>Assigned</div><div>Raised</div><div>Action</div>
     </div>
     <div id="tbody"><div class="loading">Loading tickets...</div></div>
   </div>
@@ -267,20 +263,7 @@ function startListener() {
     console.error(err);
   });
 
-  // Live timer refresh every 30s
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    document.querySelectorAll('.live-timer').forEach(el => {
-      const tid = el.dataset.tid;
-      const t = tickets.find(x => x.id === tid);
-      if (!t || t.status === 'closed') return;
-      const ms = getAgeMs(t);
-      el.textContent = formatAge(ms);
-      el.className = 'timer live-timer ' + ageClass(ms);
-      el.dataset.tid = tid;
-    });
-    document.getElementById('st-ov').textContent = tickets.filter(t => t.status === 'open' && getAgeMs(t) >= 14400000).length;
-  }, 30000);
+
 }
 
 // ── STATS ──────────────────────────────────────────────────────────────────────
@@ -293,11 +276,7 @@ function updateStats() {
   document.getElementById('st-open').textContent   = open.length;
   document.getElementById('st-closed').textContent = closed.length;
   document.getElementById('st-un').textContent     = tickets.filter(t => !t.assignedTo && t.status === 'open').length;
-  document.getElementById('st-ov').textContent     = overdue.length;
-
-  const resTimes = closed.map(t => getResolutionTime(t)).filter(Boolean);
-  const avg = resTimes.length ? resTimes.reduce((a,b)=>a+b,0)/resTimes.length : null;
-  document.getElementById('st-avg').textContent = avg ? formatDuration(avg) : '—';
+  
 }
 
 // ── CHARTS ────────────────────────────────────────────────────────────────────
@@ -414,7 +393,6 @@ function render() {
 
   if (filter === 'open')    rows = rows.filter(t => t.status === 'open');
   else if (filter === 'closed')  rows = rows.filter(t => t.status === 'closed');
-  else if (filter === 'overdue') rows = rows.filter(t => t.status === 'open' && getAgeMs(t) >= 14400000);
   else if (['cleaning','payment','agreement','legal'].includes(filter)) rows = rows.filter(t => t.category === filter);
 
   if (q) rows = rows.filter(t =>
@@ -444,7 +422,6 @@ function render() {
       <div class="tc"><span class="badge ${t.status||'open'}">${t.status||'open'}</span></div>
       <div class="tc"><span class="badge ${assigned?'':'un'}">${assigned||'Unassigned'}</span></div>
       <div class="tc ts">${ds}</div>
-      <div class="tc"><span class="timer ${cls} live-timer" data-tid="${t.id}">${ageStr||'—'}</span></div>
       <div class="tc"><span style="font-size:11px;color:var(--green)">View</span></div>
     </div>`;
   }).join('');
@@ -467,9 +444,6 @@ function openMod(id) {
       <div class="mf"><label>Email</label><div class="v">${esc(t.email||'Not provided')}</div></div>
       <div class="mf"><label>Category</label><div class="v"><span class="badge ${t.category}">${t.category}</span></div></div>
       <div class="mf"><label>Status</label><div class="v"><span class="badge ${t.status}">${t.status}</span></div></div>
-      <div class="mf"><label>${t.status==='open'?'Open for':'Resolved in'}</label>
-        <div class="v"><span class="timer ${t.status==='open'?ageClass(ms):'done'}">${t.status==='open'?formatAge(ms):formatDuration(res)||'—'}</span></div>
-      </div>
     </div>
     <div class="mf"><label>Raised On</label><div class="v ts">${d.toLocaleString('en-IN')}</div></div>
     ${cd?`<div class="mf"><label>Closed On</label><div class="v ts">${cd.toLocaleString('en-IN')}</div></div>`:''}

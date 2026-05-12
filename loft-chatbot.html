@@ -260,6 +260,196 @@ FEEDBACK_JSON>>>
 TONE: Friendly, direct, brief. No jargon. Warm and human. Max 4-5 sentences for simple answers. Bullets only when listing multiple things. If unsure, say "For this one, speak directly with the LOFT team."`;
 
 let history = [], loading = false;
+let apiCallsThisSession = 0;
+const SESSION_LIMIT = 25; // max API calls per session
+let lastCallTime = 0;
+const MIN_GAP_MS = 1500; // min 1.5s between API calls
+
+// ── HARDCODED Q&A — these never hit the API ───────────────────────────────────
+const LOCAL_QA = [
+  {
+    keys: ['wifi','wi-fi','password','internet password','network','airtel'],
+    answer: `**WiFi — LOFT 1 (IT Park)**
+
+Network: Airtel_Loft_ITPark
+Password: Loft@123
+
+LOFT 2 WiFi details will be shared on launch.`
+  },
+  {
+    keys: ['hours','timing','open','close','operating','time','when'],
+    answer: `**Operating Hours**
+
+LOFT is open **9:00 AM to 9:00 PM** daily.
+
+After-hours access requires prior written approval from the team.`
+  },
+  {
+    keys: ['price','pricing','fee','cost','monthly','rent','how much','charges','7500'],
+    answer: `**Membership Pricing**
+
+- Monthly: **Rs 7,500 per seat**
+- Security deposit: refundable
+- GST: 18%
+- Annual revision: up to 10%
+- Late payment: 2% per month
+- Due date: 1st of each month`
+  },
+  {
+    keys: ['meeting room','conference','book','booking','reserve'],
+    answer: `**Meeting Rooms**
+
+Book in advance through the LOFT team or reception.
+
+- First-come-first-served
+- Vacate promptly at end of your slot
+- Damage to equipment is charged to the member
+- Recurring bookings need prior written approval`
+  },
+  {
+    keys: ['access card','key card','lost card','lost key','replacement card'],
+    answer: `**Access Cards**
+
+Cards are mandatory and non-transferable.
+
+Lost or damaged card replacement: **Rs 500**
+
+Report a lost card to the LOFT team immediately.`
+  },
+  {
+    keys: ['smoking','smoke','vape','vaping','cigarette'],
+    answer: `LOFT maintains a **strictly smoke-free and vape-free** environment — anywhere inside or immediately outside the building. No exceptions.`
+  },
+  {
+    keys: ['parking','park','vehicle','car','bike'],
+    answer: `**Parking**
+
+- First-come-first-served unless an assigned slot is in your agreement
+- No overnight parking without prior written approval
+- LOFT is not liable for vehicle damage or theft in the parking area`
+  },
+  {
+    keys: ['notice','terminate','exit','leave','cancel','end membership'],
+    answer: `**Leaving LOFT**
+
+- Notice period: **30 days** written notice required
+- After the initial term, membership auto-renews month-to-month
+- Lock-in period as specified in your agreement`
+  },
+  {
+    keys: ['guest','visitor','bring someone','invite'],
+    answer: `**Guests and Visitors**
+
+- Guests must be registered at reception on arrival
+- Must be accompanied by you at all times
+- Meetings with guests: inside your cabin or a booked meeting room
+- Guests cannot be left unaccompanied anywhere in the facility`
+  },
+  {
+    keys: ['kitchen','pantry','fridge','food','microwave','coffee','tea'],
+    answer: `**Kitchen and Pantry**
+
+- Clean up immediately after use
+- Wash dishes right away
+- Food cannot be left in the fridge for more than 24 hours
+- Unclaimed fridge items are cleared every Friday`
+  },
+  {
+    keys: ['noise','loud','music','call','speakerphone','quiet'],
+    answer: `**Noise Policy**
+
+- Loud calls, speakerphone, and music must stay inside your cabin with the door closed
+- Headphones are strongly encouraged in common areas
+- Keep corridors and common areas quiet`
+  },
+  {
+    keys: ['alcohol','drink','beer','party'],
+    answer: `Alcohol is **not permitted** during business hours without prior written approval from LOFT for special occasions.`
+  },
+  {
+    keys: ['loft 2','second location','abhyankar','new space','new location','launch'],
+    answer: `**LOFT 2 — Abhyankar Nagar**
+
+Launching **June 15, 2026**
+
+- 125-127 seats
+- 8 private cabins
+- Open workstations
+- Dedicated community space
+
+Contact the LOFT team to register interest.`
+  },
+  {
+    keys: ['loft 1','it park','first location','current location'],
+    answer: `**LOFT 1 — IT Park, Nagpur**
+
+- 44-45 seats across 8 cabins
+- Fully operational
+- WiFi: Airtel_Loft_ITPark | Password: Loft@123`
+  },
+  {
+    keys: ['archetype','explorer','builder','visionary','connector','creative','supporter'],
+    answer: `**LOFT Member Archetypes**
+
+- **Explorer** — early stage, testing ideas
+- **Creative Head** — designer, writer, maker
+- **Builder** — founder, operator, execution-focused
+- **Visionary** — big picture, long-arc thinker
+- **Connector** — knows everyone, introduces everyone
+- **Supporter** — legal, finance, HR, ops
+
+Each archetype has a physical Builder Tag in the space.`
+  },
+  {
+    keys: ['afterhours','after hours','event','events','mixer','community event'],
+    answer: `**LOFT Afterhours**
+
+Evening community events — talks, demos, and casual mixers. This is where the LOFT community actually comes alive.
+
+All members are expected to attend. Watch the LOFT WhatsApp group for upcoming dates.`
+  },
+  {
+    keys: ['whatsapp','contact','reach','phone','number','call loft','team'],
+    answer: `**Reach the LOFT Team**
+
+WhatsApp: **+91 86008 88073**
+
+Or raise a request through this chatbot and the team will follow up.`
+  },
+  {
+    keys: ['late payment','overdue payment','penalty','interest','fine'],
+    answer: `**Late Payment**
+
+Late payment interest: **2% per month** on overdue amounts.
+
+Payment is due on the **1st of each calendar month**.`
+  },
+  {
+    keys: ['registered address','gst address','company address','use address'],
+    answer: `Using LOFT as your registered business address is available as an add-on. Check your membership agreement or speak to the LOFT team to enable this.`
+  },
+  {
+    keys: ['hello','hi','hey','good morning','good afternoon','namaste','sup','what can you do','help'],
+    answer: `Hi! I'm the LOFT Help Desk assistant.
+
+I can help you with:
+- House rules and policies
+- WiFi, pricing, hours
+- Booking meeting rooms
+- Raising a cleaning, payment, agreement, or legal request
+- Anything else about LOFT
+
+What do you need?`
+  }
+];
+
+function findLocalAnswer(input) {
+  const q = input.toLowerCase().trim();
+  for (const qa of LOCAL_QA) {
+    if (qa.keys.some(k => q.includes(k))) return qa.answer;
+  }
+  return null;
+}
 
 async function saveTicket(r) {
   if (!db) return null;
@@ -428,9 +618,41 @@ async function send() {
   if (!txt || loading) return;
   inp.value = ''; inp.style.height = 'auto';
   loading = true; document.getElementById('sb').disabled = true;
-  addMsg('user', txt); showTyping();
+  addMsg('user', txt);
+
+  // Check local Q&A first — no API call needed
+  const localAnswer = findLocalAnswer(txt);
+  if (localAnswer) {
+    setTimeout(() => {
+      msgCount++;
+      const showFb = msgCount % 3 === 0;
+      history.push({ role: 'user', content: txt });
+      history.push({ role: 'assistant', content: localAnswer });
+      addMsg('bot', localAnswer, showFb);
+      loading = false;
+      document.getElementById('sb').disabled = false;
+      inp.focus();
+    }, 400);
+    return;
+  }
+
+  // Rate limiting check
+  const now = Date.now();
+  if (apiCallsThisSession >= SESSION_LIMIT) {
+    addMsg('bot', 'You have reached the session limit. Please WhatsApp the LOFT team at +91 86008 88073 for further help.');
+    loading = false; document.getElementById('sb').disabled = false; inp.focus();
+    return;
+  }
+  if (now - lastCallTime < MIN_GAP_MS) {
+    setTimeout(() => { loading = false; document.getElementById('sb').disabled = false; inp.focus(); }, 500);
+    return;
+  }
+  lastCallTime = now;
+  apiCallsThisSession++;
+
+  showTyping();
   try { const r = await callAPI(txt); hideTyping(); parse(r); }
-  catch(e) { hideTyping(); addMsg('bot', 'Something went wrong. Please try again or contact the LOFT team directly.'); console.error(e); }
+  catch(e) { hideTyping(); addMsg('bot', 'Something went wrong. Please try again or WhatsApp us at +91 86008 88073.'); console.error(e); }
   loading = false; document.getElementById('sb').disabled = false; inp.focus();
 }
 

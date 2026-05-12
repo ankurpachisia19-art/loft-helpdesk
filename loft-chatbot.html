@@ -679,12 +679,13 @@ function sc(t) { document.getElementById('mi').value = t; send(); }
 
 function buildTranscript() {
   const lines = [];
-  lines.push('LOFT Help Desk — Chat Transcript');
+  lines.push('LOFT Help Desk - Chat Transcript');
   lines.push('Date: ' + new Date().toLocaleString('en-IN'));
   lines.push('---');
-  history.forEach(m => {
+  history.forEach(function(m) {
     const role = m.role === 'user' ? 'Member' : 'LOFT AI';
-    lines.push(role + ': ' + m.content.replace(/\*\*/g,'').replace(/\n/g,' '));
+    const text = m.content.split('**').join('').split('\n').join(' ');
+    lines.push(role + ': ' + text);
   });
   return lines.join('\n');
 }

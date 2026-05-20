@@ -534,6 +534,23 @@ async function showCard(r) {
   const tid = await saveTicket(r);
   await sendStaffEmail(r, tid);
   await sendMemberConfirm(r, tid);
+  // Notify via Telegram
+  if (tid) {
+    try {
+      await fetch('/api/telegram-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticketId:    tid,
+          category:    r.category,
+          memberName:  r.name,
+          cabin:       r.cabin,
+          email:       r.email || '',
+          description: r.description
+        })
+      });
+    } catch(e) { console.error('Telegram notify failed:', e); }
+  }
   const sid = tid ? tid.slice(0,8).toUpperCase() : 'LOCAL';
   const wamsg = `LOFT ${r.category.toUpperCase()} REQUEST%0A%0ATicket: %23${sid}%0AMember: ${encodeURIComponent(r.name)}%0ASpace: ${encodeURIComponent(r.cabin)}%0AEmail: ${encodeURIComponent(r.email||'N/A')}%0A%0A${encodeURIComponent(r.description)}`;
   const chat = document.getElementById('chat');
